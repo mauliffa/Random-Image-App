@@ -1,6 +1,7 @@
 package com.mar.project.randomimage;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -8,17 +9,25 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,6 +39,7 @@ import java.util.Collections;
 public class MainActivity extends AppCompatActivity {
     private ImageView image;
     private Button randomButton, shareButton, saveButton;
+    private ProgressBar progressBar;
     private FileOutputStream fileOutputStream;
     private Intent intent;
 
@@ -39,9 +49,10 @@ public class MainActivity extends AppCompatActivity {
     Data d01 = new Data("http://stacktoheap.com/images/stackoverflow.png");
     Data d02 = new Data("http://goo.gl/gEgYUd");
     Data d03 = new Data("http://via.placeholder.com/300.png");
+    Data d04 = new Data("https://raw.githubusercontent.com/bumptech/glide/master/static/glide_logo.png");
 
     Data[] arrays = new Data[]{
-            d01, d02, d03
+            d01, d02, d03, d04
     };
 
     @Override
@@ -53,21 +64,28 @@ public class MainActivity extends AppCompatActivity {
         randomButton = findViewById(R.id.randomButton);
         shareButton = findViewById(R.id.shareButton);
         saveButton = findViewById(R.id.saveButton);
+        progressBar = findViewById(R.id.progressBar);
 
-        Glide.with(this)
+        loadImage();
+        /**Glide.with(this)
                 .load(arrays[0].getImage())
-                .into(image);
+                .into(image);*/
 
         randomButton.setOnClickListener(v -> {
+            progressBar.setVisibility(View.VISIBLE);
+            shareButton.setClickable(false);
+            shareButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.purple_200)));
+            saveButton.setClickable(false);
+            saveButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.purple_200)));
+
             getRandomImage();
-            Glide.with(this)
+            loadImage();
+            /**Glide.with(this)
                     .load(arrays[0].getImage())
-                    .into(image);
+                    .into(image);*/
         });
 
-        shareButton.setOnClickListener(v -> {
-            shareImage();
-        });
+        shareButton.setOnClickListener(v -> shareImage());
 
         saveButton.setOnClickListener(v -> {
             if(ContextCompat.checkSelfPermission(MainActivity.this,
@@ -118,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
             intent.setType("image/*");
             intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        } catch (FileNotFoundException e){
-            e.printStackTrace();
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -156,5 +172,28 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void loadImage(){
+        Glide.with(this)
+                .load(arrays[0].getImage())
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        progressBar.setVisibility(View.GONE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        progressBar.setVisibility(View.GONE);
+                        shareButton.setClickable(true);
+                        shareButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.purple_700)));
+                        saveButton.setClickable(true);
+                        saveButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.purple_700)));
+                        return false;
+                    }
+                })
+                .into(image);
     }
 }
