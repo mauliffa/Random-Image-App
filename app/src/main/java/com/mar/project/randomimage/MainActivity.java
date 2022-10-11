@@ -49,10 +49,9 @@ public class MainActivity extends AppCompatActivity {
     Data d01 = new Data("http://stacktoheap.com/images/stackoverflow.png");
     Data d02 = new Data("http://goo.gl/gEgYUd");
     Data d03 = new Data("http://via.placeholder.com/300.png");
-    Data d04 = new Data("https://raw.githubusercontent.com/bumptech/glide/master/static/glide_logo.png");
 
     Data[] arrays = new Data[]{
-            d01, d02, d03, d04
+            d01, d02, d03
     };
 
     @Override
